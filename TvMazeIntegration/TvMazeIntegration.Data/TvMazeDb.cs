@@ -70,4 +70,10 @@ public class TvMazeDb:DbContext
 
         return (maxPages, shows); //One could make a separate DTO for this. 
     }
+
+    public async Task<bool> CheckDatabaseStatus()
+    {
+        var result = await Actors.FirstOrDefaultAsync();
+        return result is { Id: > 0 };
+    }
 }

@@ -18,12 +18,21 @@ builder.Services.AddDbContext<TvMazeDb>(
         );
         options.EnableSensitiveDataLogging();
         
-    });
+    }); //TIL DbContext is scoped. This trickles down to other server making use of this
 
-builder.Services.AddScoped<IShowsService, ShowsService>();
+builder.Services.AddScoped<IShowsService, ShowsService>(); 
+builder.Services.AddScoped<IStatusService, StatusService>();
 
 builder.Services.AddControllers();
-
+builder.Services.AddCors(options =>
+{
+options.AddDefaultPolicy(policyBuilder =>
+{
+    policyBuilder.AllowAnyHeader();
+    policyBuilder.AllowAnyMethod();
+    policyBuilder.AllowAnyOrigin();
+});
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
