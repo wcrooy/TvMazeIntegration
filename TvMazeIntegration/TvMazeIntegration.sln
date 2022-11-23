@@ -14,6 +14,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TvMazeIntegration.Clients",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TvMazeIntegration.Services", "TvMazeIntegration.Services\TvMazeIntegration.Services.csproj", "{FF31E68D-A69E-4A77-A703-66AB93B4CAAE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{9E54B0A0-0B5F-446A-B34D-28FBE21353E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TvMazeIntegration.Services.Tests", "TvMazeIntegration.Services.Tests\TvMazeIntegration.Services.Tests.csproj", "{54AFD31B-C08B-4DD5-9E0E-2966D4800265}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +52,13 @@ Global
 		{FF31E68D-A69E-4A77-A703-66AB93B4CAAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF31E68D-A69E-4A77-A703-66AB93B4CAAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF31E68D-A69E-4A77-A703-66AB93B4CAAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54AFD31B-C08B-4DD5-9E0E-2966D4800265}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54AFD31B-C08B-4DD5-9E0E-2966D4800265}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54AFD31B-C08B-4DD5-9E0E-2966D4800265}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54AFD31B-C08B-4DD5-9E0E-2966D4800265}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7448F7E7-C2E5-4AEE-A094-63BC08D4A19D} = {9E54B0A0-0B5F-446A-B34D-28FBE21353E1}
+		{54AFD31B-C08B-4DD5-9E0E-2966D4800265} = {9E54B0A0-0B5F-446A-B34D-28FBE21353E1}
 	EndGlobalSection
 EndGlobal

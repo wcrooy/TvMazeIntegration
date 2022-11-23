@@ -9,9 +9,14 @@ public class TvMazeDb:DbContext
 {
     private readonly ILogger<TvMazeDb> _log;
 
+    public TvMazeDb()
+    {
+        
+    }
     public TvMazeDb(DbContextOptions options, ILogger<TvMazeDb> log) : base(options)
     {
         _log = log ?? throw new ArgumentNullException(nameof(log));
+          
     }
     public DbSet<Show> Shows { get; set; }
     
@@ -52,7 +57,7 @@ public class TvMazeDb:DbContext
         await SaveChangesAsync();
     }
 
-    public async Task<(int MaxPages, List<Show> Shows)> GetShowsPaginated(int currentPage, int maxItemsPerPage)
+    public virtual async Task<(int MaxPages, List<Show> Shows)> GetShowsPaginated(int currentPage, int maxItemsPerPage)
     {
         var totalShowsInDatabase = await Shows.CountAsync();
         int maxPages = (int)Math.Floor(totalShowsInDatabase / (decimal)maxItemsPerPage); //We start at page 0
@@ -66,11 +71,18 @@ public class TvMazeDb:DbContext
 
         var skipNumber = currentPage * maxItemsPerPage;
 
-        var shows=  await Shows.OrderBy(show => show.Id).Skip(skipNumber).Take(maxItemsPerPage).ToListAsync();
+        var shows=  await Shows
+            .AsNoTracking()
+            .Include(show => show.Cast)
+            .OrderBy(show => show.Id).Skip(skipNumber).Take(maxItemsPerPage).ToListAsync();
 
         return (maxPages, shows); //One could make a separate DTO for this. 
     }
 
+    /// <summary>
+    /// Status check which checks if DB is available.
+    /// </summary>
+    /// <returns><see cref="bool"/>True if it can retrieve the first actor in the table</returns>
     public async Task<bool> CheckDatabaseStatus()
     {
         var result = await Actors.FirstOrDefaultAsync();

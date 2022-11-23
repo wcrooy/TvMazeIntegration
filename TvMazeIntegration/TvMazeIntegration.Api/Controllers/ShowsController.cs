@@ -1,4 +1,7 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using TvMazeIntegration.Models;
+using TvMazeIntegration.Models.Models;
 using TvMazeIntegration.Services;
 
 namespace TvMazeIntegration.Api.Controllers
@@ -9,11 +12,13 @@ namespace TvMazeIntegration.Api.Controllers
     {
         private readonly ILogger<ShowsController> _log;
         private readonly IShowsService _showsService;
+        private readonly IMapper _mapper;
         
-        public ShowsController(ILogger<ShowsController> log, IShowsService showsService)
+        public ShowsController(ILogger<ShowsController> log, IShowsService showsService, IMapper mapper)
         {
             _log = log ?? throw new ArgumentNullException(nameof(log));
             _showsService = showsService ?? throw new ArgumentNullException(nameof(showsService));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         [HttpGet()]
@@ -24,7 +29,10 @@ namespace TvMazeIntegration.Api.Controllers
             {
                 return NoContent();                
             }
-            return Ok(result);
+
+            var showResponseModel = _mapper.Map<ShowResponseModel>(result);
+            
+            return Ok(showResponseModel);
         }
     }
 }

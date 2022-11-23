@@ -1,5 +1,8 @@
+using System.Reflection;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using TvMazeIntegration.Data;
+using TvMazeIntegration.Models;
 using TvMazeIntegration.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,7 +26,16 @@ builder.Services.AddDbContext<TvMazeDb>(
 builder.Services.AddScoped<IShowsService, ShowsService>(); 
 builder.Services.AddScoped<IStatusService, StatusService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    //TODO: Fix this adding specific classes 
+});
+
+var assemblyList = new List<Assembly> { typeof(ModelMapperProfile).Assembly };
+assemblyList.AddRange(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddAutoMapper(assemblyList);
+
 builder.Services.AddCors(options =>
 {
 options.AddDefaultPolicy(policyBuilder =>

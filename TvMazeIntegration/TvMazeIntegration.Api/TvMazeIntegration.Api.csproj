@@ -24,8 +24,4 @@
       <ProjectReference Include="..\TvMazeIntegration.Services\TvMazeIntegration.Services.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Models" />
-    </ItemGroup>
-
 </Project>

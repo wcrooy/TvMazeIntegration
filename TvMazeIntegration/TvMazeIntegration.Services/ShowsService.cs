@@ -15,13 +15,13 @@ public class ShowsService:IShowsService
         _tvMazeDb = tvMazeDb ?? throw new ArgumentNullException(nameof(tvMazeDb));
     }
     
-    public async Task<ShowResponseModel> GetShowsPaged(int currentPage, int maxItemsPerPage)
+    public async Task<ShowResponse> GetShowsPaged(int currentPage, int maxItemsPerPage)
     {
         _log.LogDebug("Getting request for shows paged with currentPage: {CurrentPage} and maxItemsPerPage: {MaxItemsPerPage}", currentPage, maxItemsPerPage);
 
         var result = await _tvMazeDb.GetShowsPaginated(currentPage, maxItemsPerPage);
 
-        return new ShowResponseModel
+        return new ShowResponse
         {
             CurrentPage = currentPage,
             MaxItemsPerPage = maxItemsPerPage,
