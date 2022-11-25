@@ -1,5 +1,7 @@
+using System.Net;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using TvMazeIntegration.Models;
 using TvMazeIntegration.Models.Models;
 using TvMazeIntegration.Services;
@@ -21,7 +23,8 @@ namespace TvMazeIntegration.Api.Controllers
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        [HttpGet()]
+        [HttpGet]
+        [SwaggerOperation(OperationId = "GetAllShowsPaged")]
         public async Task<IActionResult> Get(int page = 0, int maxItemsPerPage = 25)
         {
             var result = await _showsService.GetShowsPaged(page, maxItemsPerPage);
@@ -33,6 +36,26 @@ namespace TvMazeIntegration.Api.Controllers
             var showResponseModel = _mapper.Map<ShowResponseModel>(result);
             
             return Ok(showResponseModel);
+        }
+
+        [HttpPut]
+        [SwaggerOperation(OperationId = "AddOrUpdate")]
+        public async Task<IActionResult> AddOrUpdate(List<ShowModel> showModel)
+        {
+            try
+            {
+                var shows = _mapper.Map<List<Show>>(showModel);
+                var result = await _showsService.AddShowsOrUpdate(shows);
+
+                var mappedResult = _mapper.Map<List<ShowModel>>(result);
+                return Ok(mappedResult);
+            }
+            catch (Exception e)
+            {
+                _log.LogWarning(e, $"Error while adding/updating shows to DB");
+                
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
         }
     }
 }

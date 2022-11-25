@@ -30,13 +30,11 @@ public class ShowsService:IShowsService
         };
     }
 
-    public Task<List<Show>> AddShowsOrUpdate(List<Show> showsToAdd)
+    public async Task<List<Show>> AddShowsOrUpdate(List<Show> showsToAdd)
     {
-        throw new NotImplementedException();
-    }
+        _log.LogDebug($"Adding or updating shows. Count: {showsToAdd.Count}");
+        var result = await _tvMazeDb.PutShows(showsToAdd);
 
-    public Task DeleteShow(int id)
-    {
-        throw new NotImplementedException();
+        return result;
     }
 }

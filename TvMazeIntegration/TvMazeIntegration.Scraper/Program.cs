@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,16 +8,17 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TvMazeIntegration.Clients;
 using TvMazeIntegration.Data;
+using TvMazeIntegration.Models;
 using TvMazeIntegration.Scraper;
+using TvMazeIntegration.Scraper.Client;
+
 
 var builder = new ConfigurationBuilder();
-//builder.AddEnvironmentVariables();
 
 var configuration = builder.AddJsonFile("appsettings.json").Build();
-var connectionString = configuration.GetConnectionString("TvMazeDb") ?? "Data Source=C:\\temp\\demo\\TvMazeIntegration\\TvMazeIntegration.Api\\LocalDatabase.db";
  
 var services = new ServiceCollection();
-ConfigureServices(services, configuration, connectionString);
+ConfigureServices(services, configuration);
 
 var serviceProvider = services.BuildServiceProvider();
 var scraper = serviceProvider.GetRequiredService<IScraper>();
@@ -26,18 +28,23 @@ await scraper.ScrapeShows();
 serviceProvider.Dispose();
 
 
-static void ConfigureServices(IServiceCollection services, IConfiguration configuration, string connectionString)
+static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
 {
     services.AddOptions<TvMazeApiClientOptions>();
     services.AddLogging(builder => builder.AddConsole());
-    services.AddDbContext<TvMazeDb>(
-    options =>
-    {
-        options.UseSqlite(connectionString);
-        options.EnableSensitiveDataLogging();
-    });
+
+    var assemblyList = new List<Assembly> { typeof(ModelMapperProfile).Assembly };
+    assemblyList.AddRange(AppDomain.CurrentDomain.GetAssemblies());
+    services.AddAutoMapper(assemblyList);
+
     services.AddHttpClient<ITvMazeApiClient, TvMazeApiClient>()
         .AddPolicyHandler(RetryPolicy.Get());
     services.AddSingleton<IScraper, Scraper>();
-    
+
+    var tvMazeIntegrationBaseUri = configuration["TvMazeIntegrationOptions:BaseUrl"];
+
+    services.AddHttpClient<ITvMazeIntegrationClient, TvMazeIntegrationClient>().ConfigureHttpClient(client => client.BaseAddress
+        = new Uri(tvMazeIntegrationBaseUri));
+    services.AddOptions<TvMazeApiClientOptions>();
+
 }

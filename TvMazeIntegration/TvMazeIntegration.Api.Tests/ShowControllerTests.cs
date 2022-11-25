@@ -1,3 +1,4 @@
+using AutoFixture;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -15,6 +16,7 @@ public class ShowControllerTests
 {
     private Mock<IShowsService> showServiceMock;
     private IMapper _mapper;
+    private readonly Fixture _fixture = new Fixture();
     
     public ShowControllerTests()
     {
@@ -125,5 +127,29 @@ public class ShowControllerTests
         var controller = new ShowsController(nullLogger, showServiceMock.Object, _mapper);
         var response = await controller.Get(page:11, maxItemsPerPage:50);
         Assert.IsType<NoContentResult>(response);
+    }
+
+    [Fact]
+    public async Task Add_Update_Test()
+    {
+        // showServiceMock = new Mock<IShowsService>();
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior(1));
+        
+        //var input = _fixture.Create<List<Show>>();
+        var input = _fixture.Create<List<ShowModel>>();
+        var mappedInput = _mapper.Map<List<Show>>(input);
+
+        showServiceMock.Setup(service => service.AddShowsOrUpdate(It.IsAny<List<Show>>()))
+            .ReturnsAsync(mappedInput);
+        var nullLogger = new NullLogger<ShowsController>();
+        var controller = new ShowsController(nullLogger, showServiceMock.Object, _mapper);
+        var response = await controller.AddOrUpdate(input);
+        Assert.IsType<OkObjectResult>(response);
+
+        List<ShowModel>? showsUpdateResult = ((OkObjectResult)response).Value as List<ShowModel>;
+        Assert.NotNull(showsUpdateResult);
+        Assert.Equal(showsUpdateResult.Count, input.Count);
     }
 }

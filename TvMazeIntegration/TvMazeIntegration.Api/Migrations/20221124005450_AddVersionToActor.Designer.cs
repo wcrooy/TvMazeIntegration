@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TvMazeIntegration.Data;
 
@@ -10,12 +11,28 @@ using TvMazeIntegration.Data;
 namespace TvMazeIntegration.Api.Migrations
 {
     [DbContext(typeof(TvMazeDb))]
-    partial class TvMazeDbModelSnapshot : ModelSnapshot
+    [Migration("20221124005450_AddVersionToActor")]
+    partial class AddVersionToActor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.0");
+
+            modelBuilder.Entity("ActorShow", b =>
+                {
+                    b.Property<int>("CastId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ShowsId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("CastId", "ShowsId");
+
+                    b.HasIndex("ShowsId");
+
+                    b.ToTable("ActorShow");
+                });
 
             modelBuilder.Entity("TvMazeIntegration.Models.Actor", b =>
                 {
@@ -38,21 +55,6 @@ namespace TvMazeIntegration.Api.Migrations
                     b.ToTable("Actors");
                 });
 
-            modelBuilder.Entity("TvMazeIntegration.Models.ActorShow", b =>
-                {
-                    b.Property<int>("ActorId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ShowId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("ActorId", "ShowId");
-
-                    b.HasIndex("ShowId");
-
-                    b.ToTable("ActorShow");
-                });
-
             modelBuilder.Entity("TvMazeIntegration.Models.Show", b =>
                 {
                     b.Property<int>("Id")
@@ -67,23 +69,19 @@ namespace TvMazeIntegration.Api.Migrations
                     b.ToTable("Shows");
                 });
 
-            modelBuilder.Entity("TvMazeIntegration.Models.ActorShow", b =>
+            modelBuilder.Entity("ActorShow", b =>
                 {
-                    b.HasOne("TvMazeIntegration.Models.Actor", "Actor")
+                    b.HasOne("TvMazeIntegration.Models.Actor", null)
                         .WithMany()
-                        .HasForeignKey("ActorId")
+                        .HasForeignKey("CastId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TvMazeIntegration.Models.Show", "Show")
+                    b.HasOne("TvMazeIntegration.Models.Show", null)
                         .WithMany()
-                        .HasForeignKey("ShowId")
+                        .HasForeignKey("ShowsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Actor");
-
-                    b.Navigation("Show");
                 });
 #pragma warning restore 612, 618
         }

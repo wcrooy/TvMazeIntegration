@@ -8,6 +8,16 @@ namespace TvMazeIntegration.Services.Tests;
 public class ShowsServiceTests
 {
     private readonly Fixture _fixture = new Fixture();
+
+    public ShowsServiceTests()
+    {
+        //This code is needed to support recursion
+        //EF objects are the worst....
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior(1));
+    }
+    
     private ShowsService InitShowService(Mock<TvMazeDb> mazeDb = null)
     {
         var nullLogger = new NullLogger<ShowsService>();
@@ -26,11 +36,7 @@ public class ShowsServiceTests
         var maxItemsPerPage = 25;
         var maxPages = 10;
 
-        //This code is needed to support recursion
-        //EF objects are the worst....
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior(1));
+
         
         var showResponse = _fixture.Create<List<Show>>();
 
@@ -43,5 +49,19 @@ public class ShowsServiceTests
         Assert.NotNull(showsServiceResult);
         Assert.NotEmpty(showsServiceResult.Shows);
         Assert.True(showsServiceResult.Shows.All(show => show.Cast != null && show.Cast.Any()));
+    }
+
+    [Fact]
+    public async Task AddShowsOrUpdate()
+    {
+        var tvMazeDb = new Mock<TvMazeDb>(MockBehavior.Strict);
+
+        var showsToUpdate = _fixture.Create<List<Show>>();
+
+        tvMazeDb.Setup(db => db.PutShows(showsToUpdate)).ReturnsAsync(showsToUpdate);
+        var showsService = InitShowService(tvMazeDb);
+        var updatedShows = await showsService.AddShowsOrUpdate(showsToUpdate);
+
+        Assert.Equal(showsToUpdate.Count, updatedShows.Count);
     }
 }

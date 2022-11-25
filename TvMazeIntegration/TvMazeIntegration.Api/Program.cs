@@ -1,6 +1,9 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using TvMazeIntegration.Data;
 using TvMazeIntegration.Models;
 using TvMazeIntegration.Services;
@@ -47,7 +50,26 @@ options.AddDefaultPolicy(policyBuilder =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+    {
+        options.CustomOperationIds(apiDesc =>
+        {
+            // use ControllerName_Method as operation id. That will group the methods in the generated client
+            if (apiDesc.ActionDescriptor is ControllerActionDescriptor desc)
+            {
+                var operationAttribute = (desc.EndpointMetadata
+                    .FirstOrDefault(a => a is SwaggerOperationAttribute) as SwaggerOperationAttribute);
+                return $"{desc.ControllerName}_{operationAttribute?.OperationId ?? desc.ActionName}";
+            }
+
+            // otherwise get the method name from the methodInfo
+            var controller = apiDesc.ActionDescriptor.RouteValues["controller"];
+            apiDesc.TryGetMethodInfo(out MethodInfo methodInfo);
+            var methodName = methodInfo?.Name ?? null;
+            return $"{controller}_{methodName}";
+        });
+    }
+);
 
 var app = builder.Build();
 

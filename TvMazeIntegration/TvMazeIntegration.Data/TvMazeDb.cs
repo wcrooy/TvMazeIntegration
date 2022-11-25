@@ -19,42 +19,81 @@ public class TvMazeDb:DbContext
           
     }
     public DbSet<Show> Shows { get; set; }
-    
+    public DbSet<Actor> Actors { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
-    { }
-
-    public DbSet<Actor> Actors { get; set; } = null!;
-
-    public async Task PutShow(Show show)
     {
-        if (show.Cast.Any())
+        modelBuilder.Entity<Show>()
+            .HasMany(x => x.Cast)
+            .WithMany(x => x.Shows)
+            .UsingEntity<ActorShow>(
+                x => x.HasOne(x => x.Actor).WithMany().HasForeignKey(x => x.ActorId),
+                x => x.HasOne(x => x.Show).WithMany().HasForeignKey(x => x.ShowId)
+            );
+    }
+
+
+
+    public virtual async Task<List<Show>> PutShows(List<Show> showsToAddOrUpdate)
+    {
+        foreach (var show in showsToAddOrUpdate)
+        {
+            await UpdateShow(show);
+        }
+
+        return showsToAddOrUpdate;
+    }
+
+    private async Task UpdateShow(Show show)
+    {
+        var showFromDb = await Shows.Include(show1 => show1.Cast).SingleOrDefaultAsync(show1 => show1.Id == show.Id);
+        if (showFromDb != null && !string.IsNullOrWhiteSpace(showFromDb.Name))
+        {
+            var actors = await GetFromDbOrAddActorToDb(show);
+            show.Cast = actors;
+            if (show.Name != showFromDb.Name)
+            {
+                showFromDb.Name = show.Name;
+            }
+            Shows.Update(showFromDb);
+        }
+        else
+        {
+            var actors = await GetFromDbOrAddActorToDb(show);
+            show.Cast = actors;
+            await Shows.AddAsync(show);
+        }
+        
+        
+        await SaveChangesAsync();
+    }
+
+    private async Task<List<Actor>> GetFromDbOrAddActorToDb(Show show)
+    {
+        List<Actor> actors = new List<Actor>();
+        if (show.Cast != null)
         {
             foreach (var actor in show.Cast)
             {
-                if (await Actors.AnyAsync(actor1 => actor1.Id == actor.Id))
-                {
-                    Actors.Update(actor);
+                var actorFromDb = await Actors.Include(actor1 => actor1.Shows)
+                    .SingleOrDefaultAsync(x => x.Id == actor.Id);
+                if (actorFromDb != null)
+                { //Update
+                    actorFromDb.Name = actor.Name;
+                    actorFromDb.BirthDate = actor.BirthDate;
+                    actors.Add(actorFromDb);
                 }
                 else
                 {
                     await Actors.AddAsync(actor);
+                    actors.Add(actor);
                 }
             }
         }
-        
-        if (await Shows.AnyAsync(show1 => show1.Id == show.Id))
-        {
-            Shows.Update(show);
-        }
-        else
-        {
-            await Shows.AddAsync(show);
-        }
-    
-        await SaveChangesAsync();
+
+        return actors;
     }
 
     public virtual async Task<(int MaxPages, List<Show> Shows)> GetShowsPaginated(int currentPage, int maxItemsPerPage)

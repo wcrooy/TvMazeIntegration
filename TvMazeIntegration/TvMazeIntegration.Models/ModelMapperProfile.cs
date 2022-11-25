@@ -10,5 +10,7 @@ public class ModelMapperProfile:Profile
         CreateMap<ShowResponse, ShowResponseModel>();
         CreateMap<Show, ShowModel>();
         CreateMap<Actor, ActorModel>();
+        CreateMap<ShowModel, Show>();
+        CreateMap<ActorModel, Actor>(MemberList.Source);
     }
 }
