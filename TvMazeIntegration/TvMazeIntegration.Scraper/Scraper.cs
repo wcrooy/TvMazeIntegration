@@ -31,7 +31,7 @@ public class Scraper:IScraper
 
         var shows = new List<ShowModel>(); //Using show here is not ideal //TODO: Change to showmodel
 
-        for (int i = 0; i <= maxpage; i++)
+        for (int i = 0; i < maxpage; i++)
         {
             var retrievedShows = await _client.GetShowsByPage(i);
             var inputList = _mapper.Map<List<ShowModel>>(retrievedShows);
